@@ -1,0 +1,21 @@
+// returns gcd of x and y
+#include "stdlib.h"
+#include "stdio.h"
+#include "string.h"
+#include "errno.h"
+
+int gcd(int x, int y)
+{
+	int g;
+	if(x < 0){
+		x = -x;
+	}
+	if(y < 0){
+		y = -y;
+	}
+
+	if(x + y == 0){
+		fprintf(stderr,"Error");
+	}
+
+}
