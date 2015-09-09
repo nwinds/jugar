@@ -8,3 +8,5 @@ mit_6.006_ita/ps1/prob_??.py
 # ignore genreated .pyc files
 *.pyc
 
+# ignore problem set files for mitx 6.00.1
+# mitx_6.00.1x_ics_py/homework/week2
