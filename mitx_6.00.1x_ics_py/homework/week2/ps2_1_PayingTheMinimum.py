@@ -52,17 +52,6 @@ will define those values before testing your submission.
 
 """
 # correct(1/30)
-
-# helper for float formating
-def formatedFloatStr(f):
-    d1 = '%.1f' % f
-    d2 = '%.2f' % f
-    if d1 + '0' == d2:
-        return d1
-    else:
-        return d2
-
-
 def oneYearBalance(balance, annualInterestRate, monthlyPaymentRate):
     paid = 0
     monthlyInterestRate = annualInterestRate / 12.0
@@ -71,13 +60,10 @@ def oneYearBalance(balance, annualInterestRate, monthlyPaymentRate):
         # debug info
         if month > 0:
             print('Month: %d' % month)
-            print('Minimum monthly payment: %s' % formatedFloatStr(monthlyPayment))
-            print('Remaining balance: %s' % formatedFloatStr(balance))
-            #print('Balance: %s | MP: %s ' % \
-            #(formatedFloatStr(balance), formatedFloatStr(monthlyPayment)))
+            print('Minimum monthly payment: ' + str(round(monthlyPayment, 2)))
+            print('Remaining balance: ' + str(round(balance, 2)))
 
-        monthlyPayment = monthlyPaymentRate * balance
-        
+        monthlyPayment = monthlyPaymentRate * balance        
         monthlyUnpaiedBalance = balance - monthlyPayment
         # update balance
         if month < 12:
@@ -85,8 +71,8 @@ def oneYearBalance(balance, annualInterestRate, monthlyPaymentRate):
             balance = monthlyUnpaiedBalance + \
             (monthlyInterestRate * monthlyUnpaiedBalance)
 
-    print('Total paid: %s' % formatedFloatStr(paid))
-    print('Remaining balance: %s' % formatedFloatStr(balance))
+    print('Total paid: ' + str(round(paid, 2)))
+    print('Remaining balance: ' + str(round(balance, 2)))
 
 #oneYearBalance(balance, annualInterestRate, monthlyPaymentRate)
 
