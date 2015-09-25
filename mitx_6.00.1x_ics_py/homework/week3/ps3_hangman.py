@@ -93,6 +93,7 @@ def getAvailableLetters(lettersGuessed):
     return ''.join(alphabet)
 
 secretWord = chooseWord(wordlist)
+
 def hangman(secretWord):
     '''
     secretWord: string, the secret word to guess.
