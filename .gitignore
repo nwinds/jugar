@@ -10,3 +10,6 @@ mit_6.006_ita/ps1/prob_??.py
 
 # ignore problem set files for mitx 6.00.1
 # mitx_6.00.1x_ics_py/homework/week2
+
+# ignore recall checking code for online tests
+online_test_review/
