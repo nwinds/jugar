@@ -41,6 +41,16 @@ def compChooseWord(hand, wordList, n):
 
 
     # return the best word you found.
+    #attempt 1: bruce force
+    max_score = 0
+    best_word = None
+    for word in wordList:
+        if isValidWord(word, hand, wordList):
+            score = getWordScore(word, n)
+            if max_score < score:
+                best_word = word
+                max_score = score
+    return best_word
 
 
 #
@@ -65,8 +75,40 @@ def compPlayHand(hand, wordList, n):
     wordList: list (string)
     n: integer (HAND_SIZE; i.e., hand size required for additional points)
     """
-    # TO DO ... <-- Remove this comment when you code this function
+    # Keep track of the total score
     
+    # As long as there are still letters left in the hand:
+    
+        # Display the hand
+        
+        # guess a word, return the guess result
+
+        # If the word is None:
+            
+            # break
+
+        # Otherwise (the word is valid):
+
+            # Tell the user how many points the word earned, and the updated total score, in one line followed by a blank line
+                
+            # Update the hand 
+
+    # Game is over (user entered a '.' or ran out of letters), so tell user the total score
+    total_score = 0
+    while calculateHandlen(hand) != 0:
+        print('Current Hand: '),
+        displayHand(hand)
+        word = compChooseWord(hand, wordList, n)
+        if word == None:
+            break
+        else:
+            single_score = getWordScore(word, n)
+            total_score += single_score
+            print('"%s" earned %d points. Total: %d points' % (word, single_score, total_score))
+            hand = updateHand(hand, word)
+
+    print('Total score: %d points.' % total_score)
+            
 #
 # Problem #8: Playing a game
 #
