@@ -11,4 +11,7 @@ def gcdRecur(a, b):
         return a
     else:
         return gcdRecur(b, a % b)
-        
+
+print(gcdRecur(3,2))
+print(gcdRecur(43,2))
+print(gcdRecur(91,10))
