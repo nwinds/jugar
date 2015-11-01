@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import cv2.cv as cv
+import numpy as np
+
 class element(object):
     def __init__(self, colsNum, rowsNum, anchorX, anchorY):
         self.colsNum = colsNum 
@@ -7,7 +8,8 @@ class element(object):
         self.anchorX = anchorX 
         self.anchorY = anchorY
         #initially black
-        self.block = cv.CreateImage((self.rowsNum, self.colsNum), 8, 1)
+        #testing
+        self.block = np.array([(0,-1), (0,1)])
 
     def __str__(self):
         """Returns a string representation of self"""

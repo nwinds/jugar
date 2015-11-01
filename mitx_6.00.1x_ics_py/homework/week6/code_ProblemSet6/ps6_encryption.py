@@ -195,8 +195,10 @@ def decryptStory():
 
     returns: string - story in plain text
     """
-    ### TODO.
-    return "Not yet implemented." # Remove this comment when you code the function
+    wordList = loadWords()
+    cipher = getStoryString()
+    shift = findBestShift(wordList, cipher)
+    return applyShift(cipher, shift)
 
 
 #testers

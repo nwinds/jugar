@@ -3,6 +3,9 @@ from element import *
 import cv2
 import numpy as np
 
+WHITE = 255
+BLACK = 0
+
 #import cv2.cv as cv
 # code from http://segmentfault.com/a/1190000003742433
 # as a demo to make a comparation with self-impl ver.
@@ -35,31 +38,14 @@ def dilateImpl(srcImg, dstImg, element = None, iterations = 1):
         raise Exception('input image type error!')
     if type(iterations) != int or iterations <= 0:
         raise Exception('invalid iterations')
-    
-    #fake ed: using cv to test function abstraction okay
-    #ele = cv.CreateStructuringElementEx(element.colsNum, element.rowsNum, \
-    #element.anchorX, element.anchorY, cv.CV_SHAPE_RECT)
-#
-#    imageWidth = srcImg.shape[1]
-#    imageHeight = srcImg.shape[0]
-#    xPos, yPos = 0, 0
-#
-#    while xPos < imageWidth: #Loop through rows
-#        while yPos < imageHeight: #Loop through collumns
-#
-#            srcImg.itemset((yPos, xPos, 0), 255) #Set B to 255
-#            srcImg.itemset((yPos, xPos, 1), 255) #Set G to 255
-#            srcImg.itemset((yPos, xPos, 2), 255) #Set R to 255
-#
-#            yPos += 1 #Increment Y position by 1
-#
-#        yPos = 0
-#        xPos = xPos + 1 #Increment X position by 1
 
+    tmpImg = srcImg.copy()
+    tmpImg.fill(0)
+    for i in range(srcImg.shape[1]):
+        for j in range(srcImg.shape[0]):        
+            tmpImg.itemset((j, i), 255) #Set greyscale to 255
 
-        
-    #cv.Dilate(srcImg, dstImg, ele, iterations)
-    
+ 
 
 # interface for dilate operation
 def dilateWrapper(greyImg):
@@ -82,7 +68,7 @@ def dilateWrapper(greyImg):
 
 
 
-#demoOpenCV()
+demoOpenCV()
 
 
 # self impl
