@@ -9,7 +9,7 @@ def rollN(n):
         result = result + str(rollDie())
     return result
 
-print rollN(5)
+#print rollN(5)
 
 def getTarget(goal):
     numTries = 0
@@ -26,8 +26,9 @@ def runSim(goal, numTrials):
         total += getTarget(goal)
     print 'Average number of tries =', total/float(numTrials)
 
-##runSim('11111', 100)
-##runSim('54324', 100)
+print('Probability = %f' % 0.0001286)
+runSim('11111', 100)
+runSim('54324', 100)
 
 def atLeastOneOne(numRolls, numTrials):
     numSuccess = 0
