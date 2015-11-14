@@ -201,10 +201,23 @@ class Robot(object):
         robot initially has a random direction and a random position in the
         room. The robot cleans the tile it is on.
 
+        ps:
+        random.triangular(low, high, mode)
+            Return a random floating point number N such that low <= N <= high
+        I use [-180.0, 180.0] instead of [0, 360] to distinct forhead and backwards
+        
         room:  a RectangularRoom object.
         speed: a float (speed > 0)
         """
-        raise NotImplementedError
+        if type(room) != RectangularRoom or type(speed) != float:
+            raise TypeError
+        if speed < 0.001:
+            raise ValueError
+        self.room = room
+        self.speed = speed
+        self.pos = self.room.getRandomPosition()
+        self.direction = random.triangular(-180.0, 180.0)
+
 
     def getRobotPosition(self):
         """
@@ -229,6 +242,7 @@ class Robot(object):
 
         position: a Position object.
         """
+        
         raise NotImplementedError
 
     def setRobotDirection(self, direction):
