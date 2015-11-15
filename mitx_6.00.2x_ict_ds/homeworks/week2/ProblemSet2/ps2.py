@@ -170,6 +170,10 @@ class RectangularRoom(object):
 
 
 
+# Enter your code for Robot (from the previous problem)
+#  and StandardRobot in this box
+EPSILON = 0.00001
+import math
 class Robot(object):
     """
     Represents a robot cleaning a particular room.
@@ -226,9 +230,24 @@ class Robot(object):
         """
         if self.room.isPositionInRoom(position):
             self.pos = position
+            self.room.cleanTileAtPosition(self.pos)
             return True
         return False
+        
+    def setRobotUncleanedPosition(self, position):
+        """
+        Set the position of the robot to POSITION.
 
+        position: a Position object.
+        """
+        tileX = int(math.floor(position.getX()))
+        tileY = int(math.floor(position.getY()))
+        
+        if self.room.isPositionInRoom(position) and self.room.isTileCleaned(tileX, tileY):
+            self.pos = position
+            self.room.cleanTileAtPosition(self.pos)
+            return True
+        return False
     def setRobotDirection(self, direction):
         """
         Set the direction of the robot to DIRECTION.
@@ -263,12 +282,14 @@ class StandardRobot(Robot):
         been cleaned.
         """
         angle = 0
-        while self.room.getNumCleanedTiles() > 0 and \
-                self.setRobotPosition(self.pos.getNewPosition(angle, self.speed)) == False:
-            print('debug: direction: %d' % self.d)
-            angle = random.randint(1,360-1)
-            self.setRobotDirection(self.d + angle) #tilt to another direction
-        self.room.cleanTileAtPosition(self.pos)
+        choices = range(360)
+        while self.room.getNumCleanedTiles() > 0:
+            if self.setRobotPosition(self.pos.getNewPosition(angle, self.speed)):
+                self.setRobotDirection(self.d + angle) #tilt to another direction
+                return
+            choices.remove(angle)
+            angle = random.choice(choices)            
+        
 
 
 # Uncomment this line to see your implementation of StandardRobot in action!
