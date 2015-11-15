@@ -59,6 +59,16 @@ class Position(object):
     def __str__(self):  
         return "(%0.2f, %0.2f)" % (self.x, self.y)
         
+# my impl
+class ConvInt(object):
+    @classmethod
+    def getInt(self, num):
+        return int(math.floor(num))
+    @classmethod
+    def getIntPos(self, pos):
+        tileX = ConvInt.getInt(pos.getX())
+        tileY = ConvInt.getInt(pos.getY())
+        return Position(tileX, tileY)
         
 # === Problem 1
 EPSILON = 0.001
@@ -93,14 +103,7 @@ class RectangularRoom(object):
         #room 2d list like matrix
         self.room = [[self.UNCLEANED for j in range(self.height)] \
                         for i in range(self.width)]        
-    @classmethod
-    def getInt(self, num):
-        return int(math.floor(num))
-    @classmethod
-    def getIntPos(self, pos):
-        tileX = RectangularRoom.getInt(pos.getX())
-        tileY = RectangularRoom.getInt(pos.getY())
-        return Position(tileX, tileY)
+
 
     #pos.x representin the abstract width(like row in matrix) and 
     def cleanTileAtPosition(self, pos):
@@ -111,7 +114,7 @@ class RectangularRoom(object):
 
         pos: a Position
         """
-        tilePos = RectangularRoom.getIntPos(pos)
+        tilePos = ConvInt.getIntPos(pos)
         self.room[tilePos.getX()][tilePos.getY()] = self.CLEANED
 
     def isTileCleaned(self, m, n):
@@ -161,7 +164,7 @@ class RectangularRoom(object):
         pos: a Position object.
         returns: True if pos is in the room, False otherwise.
         """
-        tilePos = RectangularRoom.getIntPos(pos)
+        tilePos = ConvInt.getIntPos(pos)
         return (0 <= tilePos.getX() < self.width) and (0 <= tilePos.getY() < self.height)
     
     #my impl to support print
@@ -183,8 +186,7 @@ class Robot(object):
 
     Subclasses of Robot should provide movement strategies by implementing
     updatePositionAndClean(), which simulates a single time-step.
-    """
-
+    """    
     def __init__(self, room, speed):
         """
         Initializes a Robot with the given speed in the specified room. The
@@ -228,6 +230,7 @@ class Robot(object):
 
         position: a Position object.
         """
+        print('debug: position %s', position)
         if self.room.isPositionInRoom(position):
             self.pos = position
             self.room.cleanTileAtPosition(self.pos)
@@ -240,14 +243,14 @@ class Robot(object):
 
         position: a Position object.
         """
-        tileX = int(math.floor(position.getX()))
-        tileY = int(math.floor(position.getY()))
-        
-        if self.room.isPositionInRoom(position) and self.room.isTileCleaned(tileX, tileY):
+        tilePos = ConvInt.getIntPos(position)
+        if self.room.isPositionInRoom(position) and \
+                self.room.isTileCleaned(tilePos.getX(), tilePos.getY()):
             self.pos = position
             self.room.cleanTileAtPosition(self.pos)
             return True
         return False
+        
     def setRobotDirection(self, direction):
         """
         Set the direction of the robot to DIRECTION.
@@ -274,6 +277,24 @@ class StandardRobot(Robot):
     direction; when it would hit a wall, it *instead* chooses a new direction
     randomly.
     """
+    #different from matrix position index TT
+    #@class/method
+    def pos2Mat(self, pos):
+        return Position(pos.getY(), pos.getX())
+
+    def getMode(self, pos):
+        tilePos = ConvInt.getIntPos(pos)
+        mode = 0x0
+        if tilePos.getY() == self.room.height-1:
+            mode |= 0x1            
+        if tilePos.getY() == 0:
+            mode |= 0x10            
+        if tilePos.getX() == self.room.width-1:
+            mode |= 0x100       
+        if tilePos.getX() == 0:
+            mode |= 0x1000
+        return mode
+        
     def updatePositionAndClean(self):
         """
         Simulate the raise passage of a single time-step.
@@ -281,23 +302,81 @@ class StandardRobot(Robot):
         Move the robot to a new position and mark the tile it is on as having
         been cleaned.
         """
-        angle = 0
-        choices = range(360)
-        while self.room.getNumCleanedTiles() > 0:
-            if self.setRobotPosition(self.pos.getNewPosition(angle, self.speed)):
-                self.setRobotDirection(self.d + angle) #tilt to another direction
-                return
-            choices.remove(angle)
-            angle = random.choice(choices)            
-        
+        #some certain position should not chose from 0~360
+        mode = self.getMode(self.pos)
+        #edge cases
+        if mode == 0x1:       #tile(ok, height-1), delta y: cos<=0
+            choices = range(180, 270+1)
+        elif mode == 0x10:    #tile(ok, 0), delta y: cos>=0
+            choices = range(0, 90+1) + range(270, 360)
+        elif mode == 0x100:   #tile(width-1, ok), delta x: sin>=0
+            choices = range(0, 180+1)
+        elif mode == 0x1000:  #tile(0, ok), delta x: sin<=0
+            choices = [0] + range(180, 360)
+        #corner cases
+        elif mode == 0x110:    #tile(width-1, 0)
+            choices = [0] + range(270, 360) #decrease x(with sin!!!) and increase y(with cos)
+        elif mode == 0x101:    #tile(width-1, height-1), delta(x,y): sin<=0, cos<=0
+            choices = range(180, 270+1)
+        elif mode == 0x1001:   #tile(0, height-1), delta(x,y): sin>=0, cos<=0
+            choices = range(90, 180+1)
+        elif mode == 0x1010:   #tile(0, 0) 
+            choices = range(0, 90+1)
+        else: #nomal cases
+            choices = range(360)
+        #if no uncleaned room left : ho handle currently
+        if self.room.getNumCleanedTiles() >= self.room.getNumTiles():
+            return
+    
+        if self.d not in choices: # if original direction cannot go further
+            angle = random.choice(choices)
+            self.setRobotDirection(angle)
+        angle = self.d
+        while self.setRobotPosition(\
+                ((self.pos)).getNewPosition(angle, self.speed))\
+                == False:
+            #current angle is not good    
+            print('debug: pos:%s | angle:%d' % (self.pos, angle))
+            if angle in choices:
+                choices.remove(angle)
+            if len(choices) == 0: # no more choices
+                print('debug: no more direction choice')
+                return    
+                       
+            angle = random.choice(choices)
+        if self.d != angle:
+            self.setRobotDirection(angle) #tilt to another direction
+        print('debug: pos:%s | angle:%d' % (self.pos, angle))
+
+#    def updatePositionAndClean(self):
+#        """
+#        Simulate the raise passage of a single time-step.
+#
+#        Move the robot to a new position and mark the tile it is on as having
+#        been cleaned.
+#        """
+#        angle = 0
+#        choices = range(360)
+#        while self.room.getNumCleanedTiles() > 0:
+#            if self.setRobotPosition(self.pos.getNewPosition(angle, self.speed)):
+#                self.setRobotDirection(self.d + angle) #tilt to another direction
+#                return
+#            choices.remove(angle)
+#            angle = random.choice(choices)            
+#        
 
 
 # Uncomment this line to see your implementation of StandardRobot in action!
-testRobotMovement(StandardRobot, RectangularRoom)
+#testRobotMovement(StandardRobot, RectangularRoom)
 #2015-11-15 11:43:28
 """ result: the robot may hanging around in cleaned area, is it okay? 
 
 """
+for i in range(100):
+    try:
+        testRobotMovement(StandardRobot, RectangularRoom)
+    finally:
+        print('loop %d end', i)
 
 # === Problem 3
 def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
