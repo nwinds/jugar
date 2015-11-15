@@ -177,6 +177,7 @@ class RectangularRoom(object):
 #  and StandardRobot in this box
 EPSILON = 0.00001
 import math
+
 class Robot(object):
     """
     Represents a robot cleaning a particular room.
@@ -230,7 +231,6 @@ class Robot(object):
 
         position: a Position object.
         """
-        print('debug: position %s', position)
         if self.room.isPositionInRoom(position):
             self.pos = position
             self.room.cleanTileAtPosition(self.pos)
@@ -336,47 +336,17 @@ class StandardRobot(Robot):
                 ((self.pos)).getNewPosition(angle, self.speed))\
                 == False:
             #current angle is not good    
-            print('debug: pos:%s | angle:%d' % (self.pos, angle))
             if angle in choices:
                 choices.remove(angle)
             if len(choices) == 0: # no more choices
-                print('debug: no more direction choice')
-                return    
-                       
+                return   
             angle = random.choice(choices)
         if self.d != angle:
             self.setRobotDirection(angle) #tilt to another direction
-        print('debug: pos:%s | angle:%d' % (self.pos, angle))
-
-#    def updatePositionAndClean(self):
-#        """
-#        Simulate the raise passage of a single time-step.
-#
-#        Move the robot to a new position and mark the tile it is on as having
-#        been cleaned.
-#        """
-#        angle = 0
-#        choices = range(360)
-#        while self.room.getNumCleanedTiles() > 0:
-#            if self.setRobotPosition(self.pos.getNewPosition(angle, self.speed)):
-#                self.setRobotDirection(self.d + angle) #tilt to another direction
-#                return
-#            choices.remove(angle)
-#            angle = random.choice(choices)            
-#        
-
 
 # Uncomment this line to see your implementation of StandardRobot in action!
-#testRobotMovement(StandardRobot, RectangularRoom)
-#2015-11-15 11:43:28
-""" result: the robot may hanging around in cleaned area, is it okay? 
+testRobotMovement(StandardRobot, RectangularRoom)
 
-"""
-for i in range(100):
-    try:
-        testRobotMovement(StandardRobot, RectangularRoom)
-    finally:
-        print('loop %d end', i)
 
 # === Problem 3
 def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
