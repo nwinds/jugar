@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # 6.00.2x Problem Set 2: Simulating robots
 
 import math
@@ -31,7 +32,7 @@ class Position(object):
     
     def getY(self):
         return self.y
-    
+    #@staticmethod
     def getNewPosition(self, angle, speed):
         """
         Computes and returns the new Position after a single clock-tick has
@@ -57,17 +58,10 @@ class Position(object):
 
     def __str__(self):  
         return "(%0.2f, %0.2f)" % (self.x, self.y)
-
-#my impl: to make Position(float, float) to int easier
-class TilePosition(Position):
-    def __init__(self, pos):
-        self.x = self.getInt(pos.getX())
-        self.y = self.getInt(pos.getY())
-    def getInt(self, num):
-        return int(math.floor(num))
-
-
+        
+        
 # === Problem 1
+EPSILON = 0.001
 class RectangularRoom(object):
     """
     A RectangularRoom represents a rectangular region containing clean or dirty
@@ -89,8 +83,6 @@ class RectangularRoom(object):
         width: an integer > 0
         height: an integer > 0
         """
-        #print('DEBUG: random.seed(0) is called, change while deploying')
-        #random.seed(0)
         random.seed()
         if type(width) != int or type(height) != int:
             raise TypeError
@@ -101,6 +93,14 @@ class RectangularRoom(object):
         #room 2d list like matrix
         self.room = [[self.UNCLEANED for j in range(self.height)] \
                         for i in range(self.width)]        
+    @classmethod
+    def getInt(self, num):
+        return int(math.floor(num))
+    @classmethod
+    def getIntPos(self, pos):
+        tileX = RectangularRoom.getInt(pos.getX())
+        tileY = RectangularRoom.getInt(pos.getY())
+        return Position(tileX, tileY)
 
     #pos.x representin the abstract width(like row in matrix) and 
     def cleanTileAtPosition(self, pos):
@@ -111,10 +111,8 @@ class RectangularRoom(object):
 
         pos: a Position
         """
-        tilePos = TilePosition(pos)
+        tilePos = RectangularRoom.getIntPos(pos)
         self.room[tilePos.getX()][tilePos.getY()] = self.CLEANED
-        #debuging
-        #print('DEBUG: room[%d][%d] is cleaned' % (tilePos.getX(), tilePos.getY()))
 
     def isTileCleaned(self, m, n):
         """
@@ -134,11 +132,7 @@ class RectangularRoom(object):
 
         returns: an integer
         """
-        #Question: cant I just return self.width*self.height?
-        cnt = 0
-        for line in self.room:
-            cnt += len(line)
-        return cnt
+        return (self.width * self.height)
 
     def getNumCleanedTiles(self):
         """
@@ -157,8 +151,8 @@ class RectangularRoom(object):
 
         returns: a Position object.
         """
-        return Position(random.choice(range(self.width)), \
-                        random.choice(range(self.height)))
+        return Position(random.randint(0, self.width-1), \
+                        random.randint(0, self.height-1))
 
     def isPositionInRoom(self, pos):
         """
@@ -167,21 +161,12 @@ class RectangularRoom(object):
         pos: a Position object.
         returns: True if pos is in the room, False otherwise.
         """
-        tilePos = TilePosition(pos)
-        return (tilePos.getX() in range(self.width)) and \
-                (tilePos.getY() in range(self.height))
+        tilePos = RectangularRoom.getIntPos(pos)
+        return (0 <= tilePos.getX() < self.width) and (0 <= tilePos.getY() < self.height)
     
     #my impl to support print
     def __str__(self):  
         return "(%d, %d)" % (self.width, self.height)
-        
-        
-        
-class TestRectangularRoom(RectangularRoom):
-    def testCleanTileAtPosition(self):
-        self.cleanTileAtPosition(Position(self.width/2.0, self.height/2.0))
-    def testPrint(self):
-        print(self)
 
 
 
@@ -195,29 +180,25 @@ class Robot(object):
     Subclasses of Robot should provide movement strategies by implementing
     updatePositionAndClean(), which simulates a single time-step.
     """
+
     def __init__(self, room, speed):
         """
         Initializes a Robot with the given speed in the specified room. The
         robot initially has a random direction and a random position in the
         room. The robot cleans the tile it is on.
-
-        ps:
-        random.triangular(low, high, mode)
-            Return a random floating point number N such that low <= N <= high
-        I use [-180.0, 180.0] instead of [0, 360] to distinct forhead and backwards
         
         room:  a RectangularRoom object.
         speed: a float (speed > 0)
         """
-        if type(room) != RectangularRoom or type(speed) != float:
+        if type(room) != RectangularRoom or (type(speed) != float and type(speed) != int):
             raise TypeError
-        if speed < 0.001:
+        if speed < EPSILON:
             raise ValueError
         self.room = room
         self.speed = speed
+        self.d = random.randint(0, 360)
         self.pos = self.room.getRandomPosition()
-        self.direction = random.triangular(-180.0, 180.0)
-
+        self.room.cleanTileAtPosition(self.pos)
 
     def getRobotPosition(self):
         """
@@ -225,8 +206,8 @@ class Robot(object):
 
         returns: a Position object giving the robot's position.
         """
-        raise NotImplementedError
-    
+        return self.pos
+        
     def getRobotDirection(self):
         """
         Return the direction of the robot.
@@ -234,7 +215,8 @@ class Robot(object):
         returns: an integer d giving the direction of the robot as an angle in
         degrees, 0 <= d < 360.
         """
-        raise NotImplementedError
+        return self.d
+
 
     def setRobotPosition(self, position):
         """
@@ -242,8 +224,10 @@ class Robot(object):
 
         position: a Position object.
         """
-        
-        raise NotImplementedError
+        if self.room.isPositionInRoom(position):
+            self.pos = position
+            return True
+        return False
 
     def setRobotDirection(self, direction):
         """
@@ -251,7 +235,7 @@ class Robot(object):
 
         direction: integer representing an angle in degrees
         """
-        raise NotImplementedError
+        self.d = direction % 360
 
     def updatePositionAndClean(self):
         """
@@ -260,8 +244,7 @@ class Robot(object):
         Move the robot to a new position and mark the tile it is on as having
         been cleaned.
         """
-        raise NotImplementedError # don't change this!
-
+        raise NotImplementedError # don't change this!        
 
 # === Problem 2
 class StandardRobot(Robot):
@@ -279,11 +262,21 @@ class StandardRobot(Robot):
         Move the robot to a new position and mark the tile it is on as having
         been cleaned.
         """
-        raise NotImplementedError
+        angle = 0
+        while self.room.getNumCleanedTiles() > 0 and \
+                self.setRobotPosition(self.pos.getNewPosition(angle, self.speed)) == False:
+            print('debug: direction: %d' % self.d)
+            angle = random.randint(1,360-1)
+            self.setRobotDirection(self.d + angle) #tilt to another direction
+        self.room.cleanTileAtPosition(self.pos)
+
 
 # Uncomment this line to see your implementation of StandardRobot in action!
-##testRobotMovement(StandardRobot, RectangularRoom)
+testRobotMovement(StandardRobot, RectangularRoom)
+#2015-11-15 11:43:28
+""" result: the robot may hanging around in cleaned area, is it okay? 
 
+"""
 
 # === Problem 3
 def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
@@ -382,3 +375,20 @@ def showPlot2(title, x_label, y_label):
 #
 #       (... your call here ...)
 #
+
+
+""" My tests """
+        
+        
+class TestRectangularRoom(RectangularRoom):
+    def testCleanTileAtPosition(self):
+        self.cleanTileAtPosition(Position(self.width/2.0, self.height/2.0))
+    def testPrint(self):
+        print(self)
+        
+class TestPosition(Position):
+    def testGetNewPosition(self):
+        for angle in range(0, 360, 45):
+            print(self.getNewPosition(angle, 1.0))
+
+        
