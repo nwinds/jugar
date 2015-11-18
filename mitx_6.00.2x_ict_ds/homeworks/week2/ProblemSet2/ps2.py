@@ -345,10 +345,11 @@ class StandardRobot(Robot):
             self.setRobotDirection(angle) #tilt to another direction
 
 # Uncomment this line to see your implementation of StandardRobot in action!
-testRobotMovement(StandardRobot, RectangularRoom)
+#testRobotMovement(StandardRobot, RectangularRoom)
 
 
 # === Problem 3
+import time
 def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
                   robot_type):
     """
@@ -367,7 +368,19 @@ def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
     robot_type: class of robot to be instantiated (e.g. StandardRobot or
                 RandomWalkRobot)
     """
-    raise NotImplementedError
+    timeList = []
+    for i in range(num_trials):
+        room = RectangularRoom(width, height)
+        robots = [robot_type(room, speed) for i in range(num_robots)]
+        t0 = time.clock()#starts simulating
+        #move the robots
+        while float(room.getNumCleanedTiles())/float(room.getNumTiles()) < min_coverage:
+            for r in robots:
+                r.updatePositionAndClean()
+        t1 = time.clock()
+        timeList.append(t1)
+    return float(sum(timeList))/len(timeList) if len(timeList) > 0 else float('NaN')
+
 
 # Uncomment this line to see how much your simulation takes on average
 ##print  runSimulation(1, 1.0, 10, 10, 0.75, 30, StandardRobot)
