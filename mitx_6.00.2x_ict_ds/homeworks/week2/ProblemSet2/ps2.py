@@ -177,7 +177,6 @@ class RectangularRoom(object):
 #  and StandardRobot in this box
 EPSILON = 0.00001
 import math
-
 class Robot(object):
     """
     Represents a robot cleaning a particular room.
@@ -204,8 +203,8 @@ class Robot(object):
         self.room = room
         self.speed = speed
         self.d = random.randint(0, 360)
-        self.pos = self.room.getRandomPosition()
-        self.room.cleanTileAtPosition(self.pos)
+        if self.setRobotPosition(self.room.getRandomPosition()) == False:
+            raise Exception
 
     def getRobotPosition(self):
         """
@@ -324,14 +323,10 @@ class StandardRobot(Robot):
         Move the robot to a new position and mark the tile it is on as having
         been cleaned.
         """
-        #some certain position should not chose from 0~360
-        mode = self.getMode(self.pos)
-        choices = self.generatChoices(mode)
-
-        #if no uncleaned room left : ho handle currently
         if self.room.getNumCleanedTiles() >= self.room.getNumTiles():
             return
-            
+        mode = self.getMode(self.pos)
+        choices = self.generatChoices(mode)
         try:
             if self.d not in choices: # if original direction cannot go further
                 angle = choices.pop(random.randrange(len(choices)))  
@@ -345,11 +340,10 @@ class StandardRobot(Robot):
             return
 
 # Uncomment this line to see your implementation of StandardRobot in action!
-#testRobotMovement(StandardRobot, RectangularRoom)
+testRobotMovement(StandardRobot, RectangularRoom)
 
 
 # === Problem 3
-import time
 def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
                   robot_type):
     """
@@ -372,13 +366,12 @@ def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
     for i in range(num_trials):
         room = RectangularRoom(width, height)
         robots = [robot_type(room, speed) for i in range(num_robots)]
-        steps = 0#time.clock()#starts simulating
+        steps = 0
         #move the robots
         while float(room.getNumCleanedTiles())/float(room.getNumTiles()) < min_coverage:
             for r in robots:
                 r.updatePositionAndClean()
             steps += 1
-        #t1 = time.clock()
         timesteps.append(steps)
     return float(sum(timesteps))/len(timesteps) if len(timesteps) > 0 else float('NaN')
 
@@ -400,10 +393,10 @@ class RandomWalkRobot(Robot):
         Move the robot to a new position and mark the tile it is on as having
         been cleaned.
         """
+        if self.room.getNumCleanedTiles() >= self.room.getNumTiles():
+            return
         mode = self.getMode(self.pos)
         choices = self.generatChoices(mode)
-        if self.room.getNumCleanedTiles() >= self.room.getNumTiles():
-            return        
         if self.d in choices:
             choices.remove(self.d)
         try:
@@ -413,6 +406,7 @@ class RandomWalkRobot(Robot):
             self.setRobotDirection(angle)
         except IndexError:
             return
+
 
 print  runSimulation(1, 1.0, 10, 10, 0.75, 30, RandomWalkRobot)
 
