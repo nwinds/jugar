@@ -245,7 +245,7 @@ class Robot(object):
         """
         tilePos = ConvInt.getIntPos(position)
         if self.room.isPositionInRoom(position) and \
-                self.room.isTileCleaned(tilePos.getX(), tilePos.getY()):
+                self.room.isTileCleaned(tilePos.getX(), tilePos.getY()) == False:
             self.pos = position
             self.room.cleanTileAtPosition(self.pos)
             return True
@@ -266,19 +266,9 @@ class Robot(object):
         Move the robot to a new position and mark the tile it is on as having
         been cleaned.
         """
-        raise NotImplementedError # don't change this!        
-
-# === Problem 2
-class StandardRobot(Robot):
-    """
-    A StandardRobot is a Robot with the standard movement strategy.
-
-    At each time-step, a StandardRobot attempts to move in its current
-    direction; when it would hit a wall, it *instead* chooses a new direction
-    randomly.
-    """
-    #different from matrix position index TT
-    #@class/method
+        raise NotImplementedError # don't change this!       
+        
+    #my impl to ease the updatePositionAndClean
     def pos2Mat(self, pos):
         return Position(pos.getY(), pos.getX())
 
@@ -294,7 +284,39 @@ class StandardRobot(Robot):
         if tilePos.getX() == 0:
             mode |= 0x1000
         return mode
-        
+    
+    def generatChoices(self, mode):
+        #edge cases
+        if mode == 0x1:                       #tile(ok, height-1), delta y: cos<=0
+            choices = range(180, 270+1)
+        elif mode == 0x10:                    #tile(ok, 0), delta y: cos>=0
+            choices = range(0, 90+1) + range(270, 360)
+        elif mode == 0x100:                   #tile(width-1, ok), delta x: sin>=0
+            choices = range(0, 180+1)
+        elif mode == 0x1000:                  #tile(0, ok), delta x: sin<=0
+            choices = [0] + range(180, 360)
+        #corner cases
+        elif mode == 0x110:                   #tile(width-1, 0)
+            choices = [0] + range(270, 360)   #decrease x(with sin!!!) and increase y(with cos)
+        elif mode == 0x101:                   #tile(width-1, height-1), delta(x,y): sin<=0, cos<=0
+            choices = range(180, 270+1)
+        elif mode == 0x1001:                  #tile(0, height-1), delta(x,y): sin>=0, cos<=0
+            choices = range(90, 180+1)
+        elif mode == 0x1010:                  #tile(0, 0) 
+            choices = range(0, 90+1)
+        else:                                 #nomal cases
+            choices = range(360)   
+        return choices     
+
+# === Problem 2
+class StandardRobot(Robot):
+    """
+    A StandardRobot is a Robot with the standard movement strategy.
+
+    At each time-step, a StandardRobot attempts to move in its current
+    direction; when it would hit a wall, it *instead* chooses a new direction
+    randomly.
+    """ 
     def updatePositionAndClean(self):
         """
         Simulate the raise passage of a single time-step.
@@ -304,45 +326,23 @@ class StandardRobot(Robot):
         """
         #some certain position should not chose from 0~360
         mode = self.getMode(self.pos)
-        #edge cases
-        if mode == 0x1:       #tile(ok, height-1), delta y: cos<=0
-            choices = range(180, 270+1)
-        elif mode == 0x10:    #tile(ok, 0), delta y: cos>=0
-            choices = range(0, 90+1) + range(270, 360)
-        elif mode == 0x100:   #tile(width-1, ok), delta x: sin>=0
-            choices = range(0, 180+1)
-        elif mode == 0x1000:  #tile(0, ok), delta x: sin<=0
-            choices = [0] + range(180, 360)
-        #corner cases
-        elif mode == 0x110:    #tile(width-1, 0)
-            choices = [0] + range(270, 360) #decrease x(with sin!!!) and increase y(with cos)
-        elif mode == 0x101:    #tile(width-1, height-1), delta(x,y): sin<=0, cos<=0
-            choices = range(180, 270+1)
-        elif mode == 0x1001:   #tile(0, height-1), delta(x,y): sin>=0, cos<=0
-            choices = range(90, 180+1)
-        elif mode == 0x1010:   #tile(0, 0) 
-            choices = range(0, 90+1)
-        else: #nomal cases
-            choices = range(360)
+        choices = self.generatChoices(mode)
+
         #if no uncleaned room left : ho handle currently
         if self.room.getNumCleanedTiles() >= self.room.getNumTiles():
             return
-    
-        if self.d not in choices: # if original direction cannot go further
-            angle = random.choice(choices)
-            self.setRobotDirection(angle)
-        angle = self.d
-        while self.setRobotPosition(\
-                ((self.pos)).getNewPosition(angle, self.speed))\
-                == False:
-            #current angle is not good    
-            if angle in choices:
-                choices.remove(angle)
-            if len(choices) == 0: # no more choices
-                return   
-            angle = random.choice(choices)
-        if self.d != angle:
-            self.setRobotDirection(angle) #tilt to another direction
+            
+        try:
+            if self.d not in choices: # if original direction cannot go further
+                angle = choices.pop(random.randrange(len(choices)))  
+            else:
+                angle = self.d
+            while self.setRobotPosition(self.pos.getNewPosition(angle, self.speed)) == False:   
+                angle = choices.pop(random.randrange(len(choices)))  
+            if self.d != angle:
+                self.setRobotDirection(angle) #tilt to another direction
+        except IndexError:
+            return
 
 # Uncomment this line to see your implementation of StandardRobot in action!
 #testRobotMovement(StandardRobot, RectangularRoom)
@@ -368,22 +368,23 @@ def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
     robot_type: class of robot to be instantiated (e.g. StandardRobot or
                 RandomWalkRobot)
     """
-    timeList = []
+    timesteps = []
     for i in range(num_trials):
         room = RectangularRoom(width, height)
         robots = [robot_type(room, speed) for i in range(num_robots)]
-        t0 = time.clock()#starts simulating
+        steps = 0#time.clock()#starts simulating
         #move the robots
         while float(room.getNumCleanedTiles())/float(room.getNumTiles()) < min_coverage:
             for r in robots:
                 r.updatePositionAndClean()
-        t1 = time.clock()
-        timeList.append(t1)
-    return float(sum(timeList))/len(timeList) if len(timeList) > 0 else float('NaN')
+            steps += 1
+        #t1 = time.clock()
+        timesteps.append(steps)
+    return float(sum(timesteps))/len(timesteps) if len(timesteps) > 0 else float('NaN')
 
 
 # Uncomment this line to see how much your simulation takes on average
-##print  runSimulation(1, 1.0, 10, 10, 0.75, 30, StandardRobot)
+#print  runSimulation(1, 1.0, 10, 10, 0.75, 30, StandardRobot)
 
 
 # === Problem 4
@@ -399,8 +400,21 @@ class RandomWalkRobot(Robot):
         Move the robot to a new position and mark the tile it is on as having
         been cleaned.
         """
-        raise NotImplementedError
+        mode = self.getMode(self.pos)
+        choices = self.generatChoices(mode)
+        if self.room.getNumCleanedTiles() >= self.room.getNumTiles():
+            return        
+        if self.d in choices:
+            choices.remove(self.d)
+        try:
+            angle = choices.pop(random.randrange(len(choices)))            
+            while self.setRobotPosition(self.pos.getNewPosition(angle, self.speed)) == False:
+                angle = choices.pop(random.randrange(len(choices)))         
+            self.setRobotDirection(angle)
+        except IndexError:
+            return
 
+print  runSimulation(1, 1.0, 10, 10, 0.75, 30, RandomWalkRobot)
 
 def showPlot1(title, x_label, y_label):
     """
