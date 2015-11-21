@@ -121,7 +121,6 @@ class Patient(object):
         #    raise TypeError
         if maxPop < 0:
             raise ValueError
-        #print(viruses)
         self.viruses = viruses[:]
         self.maxPop = maxPop
 
@@ -170,11 +169,10 @@ class Patient(object):
         #survive game for viruses
         #count current population
         #reproduce or not
-        #oldViruses = copy.deepcopy(self.viruses)
+
         #pop may introduce many error, try filter(dummy block?) or create a new array to save them
         #and pop is not quite efficient
         survived = []
-        print(self.viruses)
         for v in self.viruses:
             if v.doesClear() == False:
                 survived.append(v)
@@ -192,11 +190,11 @@ class Patient(object):
             self.viruses += duplicates
         return self.getTotalPop()
 
-#test problem 1
-virus = SimpleVirus(1.0, 0.0)
-patient = Patient([virus], 100)
-for i in range(100):
-    patient.update()
+##test problem 1
+##virus = SimpleVirus(1.0, 0.0)
+##patient = Patient([virus], 100)
+##for i in range(100):
+##    patient.update()
     
 #
 # PROBLEM 3
