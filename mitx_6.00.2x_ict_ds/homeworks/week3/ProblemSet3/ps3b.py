@@ -199,6 +199,16 @@ class Patient(object):
 #
 # PROBLEM 3
 #
+#from ps3b_precompiled_27 import *  
+
+def drawPlot(lst):
+    pylab.plot(lst, label = 'SimpleVirus simulation')
+    pylab.title('SimpleVirus simulation')
+    pylab.xlabel('Time Steps')
+    pylab.ylabel('Average Virus Population')
+    pylab.legend(['virus population'])
+    pylab.show()
+
 def simulationWithoutDrug(numViruses, maxPop, maxBirthProb, clearProb,
                           numTrials):
     """
@@ -214,14 +224,25 @@ def simulationWithoutDrug(numViruses, maxPop, maxBirthProb, clearProb,
     clearProb: Maximum clearance probability (a float between 0-1)
     numTrials: number of simulation runs to execute (an integer)
     """
-
-    # TODO
+    TIMESTEPS = 300
+    virusPop = [0 for t in range(TIMESTEPS)]
+    #get sum of virus population at each timestep 
+    for nt in range(numTrials):
+        virus = SimpleVirus(maxBirthProb, clearProb)
+        patient = Patient([virus for vnum in range(numViruses)], maxPop)
+        for t in range(TIMESTEPS):
+            virusPop[t] += patient.update()
+    #get the avg
+    for t in range(TIMESTEPS):
+        virusPop[t] = float(virusPop[t])/numTrials
+    drawPlot(virusPop)
 
 
 
 #
 # PROBLEM 4
 #
+import copy
 class ResistantVirus(SimpleVirus):
     """
     Representation of a virus which can have drug resistance.
@@ -244,21 +265,22 @@ class ResistantVirus(SimpleVirus):
         mutProb: Mutation probability for this virus particle (a float). This is
         the probability of the offspring acquiring or losing resistance to a drug.
         """
-
-        # TODO
-
+        SimpleVirus.__init__(self, maxBirthProb, clearProb)
+        self.resistances = copy.deepcopy(resistances)
+        self.mutProb = mutProb
 
     def getResistances(self):
         """
         Returns the resistances for this virus.
         """
-        # TODO
+        return self.resistances
+
 
     def getMutProb(self):
         """
         Returns the mutation probability for this virus.
         """
-        # TODO
+        return self.mutProb
 
     def isResistantTo(self, drug):
         """
@@ -271,8 +293,35 @@ class ResistantVirus(SimpleVirus):
         returns: True if this virus instance is resistant to the drug, False
         otherwise.
         """
+        return self.resistances.get(drug, False)
+    
+    def inheritedResistance(self):
+        """
+        For each drug resistance trait of the virus (i.e. each key of
+        self.resistances), the offspring has probability 1-mutProb of
+        inheriting that resistance trait from the parent, and probability
+        mutProb of switching that resistance trait in the offspring.       
+
+        For example, if a virus particle is resistant to guttagonol but not
+        srinol, and self.mutProb is 0.1, then there is a 10% chance that
+        that the offspring will lose resistance to guttagonol and a 90%
+        chance that the offspring will be resistant to guttagonol.
+        There is also a 10% chance that the offspring will gain resistance to
+        srinol and a 90% chance that the offspring will not be resistant to
+        srinol.
         
-        # TODO
+        childLst: the reproduced child virus' resistance drug dict, mutable and 
+        rewrite at the same place
+        Return: dict of child virus's resistance
+        """
+        childResistances = {}
+        for drug in self.resistances:
+            chance = random.random()
+            if self.isResistantTo(drug):
+                childResistances[drug] = chance >= self.mutProb #hits the 1-mutProb zone in [0,1]
+            else:
+                childResistances[drug] = chance < self.mutProb
+        return childResistances
 
 
     def reproduce(self, popDensity, activeDrugs):
@@ -319,10 +368,13 @@ class ResistantVirus(SimpleVirus):
         maxBirthProb and clearProb values as this virus. Raises a
         NoChildException if this virus particle does not reproduce.
         """
+        if [self.resistances.get(drug, False) for drug in activeDrugs].count(False) > 0:#not resistant to all drugs
+            raise NoChildException
+        if random.random() > self.maxBirthProb * (1 - popDensity): #fall out of the zone of getting reproduced
+            raise NoChildException
+        return ResistantVirus(self.maxBirthProb, self.clearProb, self.inheritedResistance(), self.mutProb)
 
-        # TODO
-
-            
+                        
 
 class TreatedPatient(Patient):
     """
