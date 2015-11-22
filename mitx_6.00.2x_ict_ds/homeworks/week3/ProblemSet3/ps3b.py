@@ -344,18 +344,9 @@ class ResistantVirus(SimpleVirus):
         maxBirthProb and clearProb values as its parent). The offspring virus
         will have the same maxBirthProb, clearProb, and mutProb as the parent.
 
-        For each drug resistance trait of the virus (i.e. each key of
-        self.resistances), the offspring has probability 1-mutProb of
-        inheriting that resistance trait from the parent, and probability
-        mutProb of switching that resistance trait in the offspring.       
-
-        For example, if a virus particle is resistant to guttagonol but not
-        srinol, and self.mutProb is 0.1, then there is a 10% chance that
-        that the offspring will lose resistance to guttagonol and a 90%
-        chance that the offspring will be resistant to guttagonol.
-        There is also a 10% chance that the offspring will gain resistance to
-        srinol and a 90% chance that the offspring will not be resistant to
-        srinol.
+        The reproduced new virus inherists the resistance to drugs by calling 
+        method self.inheritedResistance(my reorganized codes, seperated in 
+        another method instead of this one)
 
         popDensity: the population density (a float), defined as the current
         virus population divided by the maximum population       
