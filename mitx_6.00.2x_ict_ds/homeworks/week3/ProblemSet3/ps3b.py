@@ -147,6 +147,12 @@ class Patient(object):
 
         return len(self.viruses)   
 
+    def getSurvivedViruses(self):
+        survived = []
+        for v in self.viruses:
+            if v.doesClear() == False:
+                survived.append(v)
+        return survived
 
     def update(self):
         """
@@ -172,11 +178,8 @@ class Patient(object):
 
         #pop may introduce many error, try filter(dummy block?) or create a new array to save them
         #and pop is not quite efficient
-        survived = []
-        for v in self.viruses:
-            if v.doesClear() == False:
-                survived.append(v)
-        self.viruses = survived
+
+        self.viruses = self.getSurvivedViruses()
         currPopDen = float(self.getTotalPop())/self.getMaxPop()
         duplicates = []
         for v in self.viruses: 
@@ -186,8 +189,8 @@ class Patient(object):
                 duplicates.append(newViruse)
             except NoChildException:
                 continue
-        if len(duplicates) != 0:
-            self.viruses += duplicates
+        # if len(duplicates) != 0:
+        self.viruses += duplicates
         return self.getTotalPop()
 
 ##test problem 1
@@ -384,8 +387,8 @@ class TreatedPatient(Patient):
 
         maxPop: The  maximum virus population for this patient (an integer)
         """
-
-        # TODO
+        Patient.__init__(self, viruses, maxPop)
+        self.postcondition = []
 
 
     def addPrescription(self, newDrug):
@@ -398,9 +401,8 @@ class TreatedPatient(Patient):
 
         postcondition: The list of drugs being administered to a patient is updated
         """
-
-        # TODO
-
+        if newDrug not in self.postcondition: #already prescribed, no effect
+            self.postcondition.append(newDrug)
 
     def getPrescriptions(self):
         """
@@ -409,8 +411,7 @@ class TreatedPatient(Patient):
         returns: The list of drug names (strings) being administered to this
         patient.
         """
-
-        # TODO
+        return self.postcondition
 
 
     def getResistPop(self, drugResist):
@@ -424,8 +425,17 @@ class TreatedPatient(Patient):
         returns: The population of viruses (an integer) with resistances to all
         drugs in the drugResist list.
         """
+        resistPop = 0
+        for v in self.viruses:
+            resistToAll = True
+            for drug in drugResist:
+                if v.isResistantTo(drug) == False: # no resistance
+                    resistToAll = False
+                    break #break the 2-lv loop and check next virus
+            if resistToAll:
+                resistPop += 1
+        return resistPop
 
-        # TODO
 
 
     def update(self):
@@ -448,9 +458,18 @@ class TreatedPatient(Patient):
         returns: The total virus population at the end of the update (an
         integer)
         """
-
-        # TODO
-
+        self.viruses = self.getSurvivedViruses()
+        currPopDen = float(self.getTotalPop())/self.getMaxPop()
+        duplicates = []
+        for v in self.viruses:
+            try:
+                newViruse = v.reproduce(currPopDen, self.postcondition)
+                duplicates.append(newViruse)
+            except NoChildException:
+                continue
+        self.viruses += duplicates
+        return self.getTotalPop()
+        
 
 
 #
