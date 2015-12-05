@@ -1,4 +1,4 @@
-# Problem Set 3: Simulating the Spread of Disease and Virus Population Dynamics 
+# Problem Set 3: Simulating the Spread of Disease and Virus Population Dynamics
 
 import numpy
 import random
@@ -7,6 +7,7 @@ import pylab
 ''' 
 Begin helper code
 '''
+
 
 class NoChildException(Exception):
     """
@@ -24,11 +25,14 @@ End helper code
 # PROBLEM 2
 #
 # Enter your definitions for the SimpleVirus and Patient classes in this box.
+
+
 class SimpleVirus(object):
 
     """
     Representation of a simple virus (does not model drug effects/resistance).
     """
+
     def __init__(self, maxBirthProb, clearProb):
         """
         Initialize a SimpleVirus instance, saves all parameters as attributes
@@ -36,12 +40,12 @@ class SimpleVirus(object):
         maxBirthProb: Maximum reproduction probability (a float between 0-1)        
         clearProb: Maximum clearance probability (a float between 0-1).
         """
-        #if type(maxBirthProb) != float or type(clearProb) != float:
+        # if type(maxBirthProb) != float or type(clearProb) != float:
         #    raise TypeError
-        #if  0.0 <= maxBirthProb <= 1.0 and 0.0 <= clearProb <= 1.0:
+        # if  0.0 <= maxBirthProb <= 1.0 and 0.0 <= clearProb <= 1.0:
         self.maxBirthProb = maxBirthProb
         self.clearProb = clearProb
-        #else:
+        # else:
         #    raise ValueError
 
     def getMaxBirthProb(self):
@@ -64,47 +68,49 @@ class SimpleVirus(object):
         """
         r = random.random()
         return (r <= self.clearProb)
-    
+
     def reproduce(self, popDensity):
         """
         Stochastically determines whether this virus particle reproduces at a
         time step. Called by the update() method in the Patient and
         TreatedPatient classes. The virus particle reproduces with probability
         self.maxBirthProb * (1 - popDensity).
-        
+
         If this virus particle reproduces, then reproduce() creates and returns
         the instance of the offspring SimpleVirus (which has the same
         maxBirthProb and clearProb values as its parent).         
 
         popDensity: the population density (a float), defined as the current
         virus population divided by the maximum population.         
-        
+
         returns: a new instance of the SimpleVirus class representing the
         offspring of this virus particle. The child should have the same
         maxBirthProb and clearProb values as this virus. Raises a
         NoChildException if this virus particle does not reproduce.               
         """
-        #roll a dice
-        #if hits the zone(virus reproduce)
+        # roll a dice
+        # if hits the zone(virus reproduce)
         #    return new virus
-        #else
+        # else
         #    nothing
         r = random.random()
-        if popDensity < 1.0 and r < (self.maxBirthProb*(1-popDensity)):
+        if popDensity < 1.0 and r < (self.maxBirthProb * (1 - popDensity)):
             dup = SimpleVirus(self.maxBirthProb, self.clearProb)
             return dup
         else:
             raise NoChildException
-            
+
     def __str__(self):
         return '(%s, %s)' % (self.maxBirthProb, self.clearProb)
-        
+
 import copy
+
+
 class Patient(object):
     """
     Representation of a simplified patient. The patient does not take any drugs
     and his/her virus populations have no drug resistance.
-    """    
+    """
 
     def __init__(self, viruses, maxPop):
         """
@@ -116,7 +122,7 @@ class Patient(object):
 
         maxPop: the maximum virus population for this patient (an integer)
         """
-        #if type(viruses) != SimpleVirus or\
+        # if type(viruses) != SimpleVirus or\
         #  (type(maxPop) != int and type(maxPop) != float):
         #    raise TypeError
         if maxPop < 0:
@@ -124,13 +130,11 @@ class Patient(object):
         self.viruses = viruses[:]
         self.maxPop = maxPop
 
-
     def getViruses(self):
         """
         Returns the viruses in this Patient.
         """
         return self.viruses
-
 
     def getMaxPop(self):
         """
@@ -138,14 +142,13 @@ class Patient(object):
         """
         return self.maxPop
 
-
     def getTotalPop(self):
         """
         Gets the size of the current total virus population. 
         returns: The total virus population (an integer)
         """
 
-        return len(self.viruses)   
+        return len(self.viruses)
 
     def getSurvivedViruses(self):
         survived = []
@@ -158,13 +161,13 @@ class Patient(object):
         """
         Update the state of the virus population in this patient for a single
         time step. update() should execute the following steps in this order:
-        
+
         - Determine whether each virus particle survives and updates the list
         of virus particles accordingly.   
-        
+
         - The current population density is calculated. This population density
           value is used until the next call to update() 
-        
+
         - Based on this value of population density, determine whether each 
           virus particle should reproduce and add offspring virus particles to 
           the list of viruses in this patient.                    
@@ -172,18 +175,19 @@ class Patient(object):
         returns: The total virus population at the end of the update (an
         integer)
         """
-        #survive game for viruses
-        #count current population
-        #reproduce or not
+        # survive game for viruses
+        # count current population
+        # reproduce or not
 
-        #pop may introduce many error, try filter(dummy block?) or create a new array to save them
-        #and pop is not quite efficient
+        # pop may introduce many error, try filter(dummy block?) or create a new array to save them
+        # and pop is not quite efficient
 
         self.viruses = self.getSurvivedViruses()
-        currPopDen = float(self.getTotalPop())/self.getMaxPop()
+        currPopDen = float(self.getTotalPop()) / self.getMaxPop()
         duplicates = []
-        for v in self.viruses: 
-            #current viruses number chances to dup, sim all dup in a loop but the true process is happened at the same time
+        for v in self.viruses:
+            # current viruses number chances to dup, sim all dup in a loop but
+            # the true process is happened at the same time
             try:
                 newViruse = v.reproduce(currPopDen)
                 duplicates.append(newViruse)
@@ -193,24 +197,26 @@ class Patient(object):
         self.viruses += duplicates
         return self.getTotalPop()
 
-##test problem 1
+# test problem 1
 ##virus = SimpleVirus(1.0, 0.0)
 ##patient = Patient([virus], 100)
-##for i in range(100):
-##    patient.update()
-    
+# for i in range(100):
+# patient.update()
+
 #
 # PROBLEM 3
 #
-#from ps3b_precompiled_27 import *  
+#from ps3b_precompiled_27 import *
+
 
 def drawPlot(lst):
-    pylab.plot(lst, label = 'SimpleVirus simulation')
+    pylab.plot(lst, label='SimpleVirus simulation')
     pylab.title('SimpleVirus simulation')
     pylab.xlabel('Time Steps')
     pylab.ylabel('Average Virus Population')
     pylab.legend(['virus population'])
     pylab.show()
+
 
 def simulationWithoutDrug(numViruses, maxPop, maxBirthProb, clearProb,
                           numTrials):
@@ -229,27 +235,28 @@ def simulationWithoutDrug(numViruses, maxPop, maxBirthProb, clearProb,
     """
     TIMESTEPS = 300
     virusPop = [0 for t in range(TIMESTEPS)]
-    #get sum of virus population at each timestep 
+    # get sum of virus population at each timestep
     for nt in range(numTrials):
         virus = SimpleVirus(maxBirthProb, clearProb)
         patient = Patient([virus for vnum in range(numViruses)], maxPop)
         for t in range(TIMESTEPS):
             virusPop[t] += patient.update()
-    #get the avg
+    # get the avg
     for t in range(TIMESTEPS):
-        virusPop[t] = float(virusPop[t])/numTrials
+        virusPop[t] = float(virusPop[t]) / numTrials
     drawPlot(virusPop)
-
 
 
 #
 # PROBLEM 4
 #
 import copy
+
+
 class ResistantVirus(SimpleVirus):
     """
     Representation of a virus which can have drug resistance.
-    """   
+    """
 
     def __init__(self, maxBirthProb, clearProb, resistances, mutProb):
         """
@@ -278,7 +285,6 @@ class ResistantVirus(SimpleVirus):
         """
         return self.resistances
 
-
     def getMutProb(self):
         """
         Returns the mutation probability for this virus.
@@ -297,7 +303,7 @@ class ResistantVirus(SimpleVirus):
         otherwise.
         """
         return self.resistances.get(drug, False)
-    
+
     def inheritedResistance(self):
         """
         For each drug resistance trait of the virus (i.e. each key of
@@ -312,7 +318,7 @@ class ResistantVirus(SimpleVirus):
         There is also a 10% chance that the offspring will gain resistance to
         srinol and a 90% chance that the offspring will not be resistant to
         srinol.
-        
+
         childLst: the reproduced child virus' resistance drug dict, mutable and 
         rewrite at the same place
         Return: dict of child virus's resistance
@@ -321,11 +327,11 @@ class ResistantVirus(SimpleVirus):
         for drug in self.resistances:
             chance = random.random()
             if self.isResistantTo(drug):
-                childResistances[drug] = chance >= self.mutProb #hits the 1-mutProb zone in [0,1]
+                # hits the 1-mutProb zone in [0,1]
+                childResistances[drug] = chance >= self.mutProb
             else:
                 childResistances[drug] = chance < self.mutProb
         return childResistances
-
 
     def reproduce(self, popDensity, activeDrugs):
         """
@@ -362,13 +368,12 @@ class ResistantVirus(SimpleVirus):
         maxBirthProb and clearProb values as this virus. Raises a
         NoChildException if this virus particle does not reproduce.
         """
-        if [self.resistances.get(drug, False) for drug in activeDrugs].count(False) > 0:#not resistant to all drugs
+        if [self.resistances.get(drug, False) for drug in activeDrugs].count(False) > 0:  # not resistant to all drugs
             raise NoChildException
-        if random.random() > self.maxBirthProb * (1 - popDensity): #fall out of the zone of getting reproduced
+        if random.random() > self.maxBirthProb * (1 - popDensity):  # fall out of the zone of getting reproduced
             raise NoChildException
         return ResistantVirus(self.maxBirthProb, self.clearProb, self.inheritedResistance(), self.mutProb)
 
-                        
 
 class TreatedPatient(Patient):
     """
@@ -390,7 +395,6 @@ class TreatedPatient(Patient):
         Patient.__init__(self, viruses, maxPop)
         self.postcondition = []
 
-
     def addPrescription(self, newDrug):
         """
         Administer a drug to this patient. After a prescription is added, the
@@ -401,7 +405,7 @@ class TreatedPatient(Patient):
 
         postcondition: The list of drugs being administered to a patient is updated
         """
-        if newDrug not in self.postcondition: #already prescribed, no effect
+        if newDrug not in self.postcondition:  # already prescribed, no effect
             self.postcondition.append(newDrug)
 
     def getPrescriptions(self):
@@ -412,7 +416,6 @@ class TreatedPatient(Patient):
         patient.
         """
         return self.postcondition
-
 
     def getResistPop(self, drugResist):
         """
@@ -429,14 +432,12 @@ class TreatedPatient(Patient):
         for v in self.viruses:
             resistToAll = True
             for drug in drugResist:
-                if v.isResistantTo(drug) == False: # no resistance
+                if v.isResistantTo(drug) == False:  # no resistance
                     resistToAll = False
-                    break #break the 2-lv loop and check next virus
+                    break  # break the 2-lv loop and check next virus
             if resistToAll:
                 resistPop += 1
         return resistPop
-
-
 
     def update(self):
         """
@@ -459,7 +460,7 @@ class TreatedPatient(Patient):
         integer)
         """
         self.viruses = self.getSurvivedViruses()
-        currPopDen = float(self.getTotalPop())/self.getMaxPop()
+        currPopDen = float(self.getTotalPop()) / self.getMaxPop()
         duplicates = []
         for v in self.viruses:
             try:
@@ -469,8 +470,8 @@ class TreatedPatient(Patient):
                 continue
         self.viruses += duplicates
         return self.getTotalPop()
-        
 
+# Enter your definition for simulationWithDrug in this box
 
 #
 # PROBLEM 5
@@ -497,5 +498,56 @@ def simulationWithDrug(numViruses, maxPop, maxBirthProb, clearProb, resistances,
     numTrials: number of simulation runs to execute (an integer)
     
     """
+    def drawPlot(lst1, lst2):
+        pylab.plot(lst1, 'b', label = 'total pop')
+        pylab.plot(lst2, 'r', label = 'guttagonol-resistant pop')
+        pylab.title('ResistantVirus simulation')
+        pylab.xlabel('time step')
+        pylab.ylabel('# viruses')
+        pylab.legend(['Total', 'ResistantVirus'])
+        pylab.show()
+    def getAvg(lst, numTrials):
+        if len(lst) == 0:
+            return 0
+        for ele in lst:
+            ele = float(ele)/float(numTrials)
 
-    # TODO
+    timestepsWithoutDrug = 150
+    timestepsOverall = timestepsWithoutDrug + 150
+    virusPop = [0 for t in range(timestepsOverall)]
+    resistantVirusPop = [0 for t in range(timestepsOverall)]   
+    for nt in range(numTrials):
+        virus = ResistantVirus(maxBirthProb, clearProb, resistances, mutProb)
+        patient = TreatedPatient([virus for vnum in range(numViruses)], maxPop)
+        #timestepswithoutDrug times: Patient without drug 
+        for t in range(timestepsWithoutDrug):
+            virusPop[t] += patient.update()
+            resistantVirusPop[t] += patient.getResistPop(['guttagonol'])
+        #timestepsAddedDrug times: Patient treated with drug
+        patient.addPrescription('guttagonol')
+        for t in range(timestepsWithoutDrug, timestepsOverall):
+            virusPop[t] += patient.update()
+            resistantVirusPop[t] += patient.getResistPop(['guttagonol'])
+    getAvg(virusPop, numTrials)
+    getAvg(resistantVirusPop, numTrials)
+    drawPlot(virusPop, resistantVirusPop)
+
+#test run online
+#simulationWithDrug(1, 10, 1.0, 0.0, {}, 1.0, 5)
+#simulationWithDrug(1, 20, 1.0, 0.0, {"guttagonol": True}, 1.0, 5)
+#simulationWithDrug(75, 100, .8, 0.1, {"guttagonol": True}, 0.8, 1)
+
+def drawPlot(lst1, lst2):
+    pylab.plot(lst1, 'b', label = 'total pop')
+    pylab.plot(lst2, 'r', label = 'guttagonol-resistant pop')
+    pylab.title('ResistantVirus simulation')
+    pylab.xlabel('time step')
+    pylab.ylabel('# viruses')
+    pylab.legend(['Total', 'ResistantVirus'])
+    pylab.show()
+
+drawPlot([10, 17, 27, 36, 44, 49, 50, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51], [2.0, 3.4, 5.4, 7.2, 8.8, 9.8, 10.0, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2, 10.2])
+drawPlot([9, 16, 27, 48, 71, 95, 99, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103],[1.8, 3.2, 5.4, 9.6, 14.2, 19.0, 19.8, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6, 20.6])
+drawPlot([93, 99, 92, 94, 90, 91, 91, 101, 97, 98, 101, 101, 96, 96, 98, 101, 96, 95, 97, 98, 98, 96, 95, 97, 91, 95, 98, 97, 99, 96, 97, 95, 95, 91, 86, 86, 87, 95, 97, 92, 96, 90, 98, 97, 96, 95, 91, 94, 100, 98, 98, 95, 94, 91, 100, 101, 98, 99, 97, 96, 101, 99, 92, 94, 95, 93, 91, 96, 97, 96, 101, 96, 97, 95, 94, 95, 95, 97, 95, 91, 90, 92, 92, 92, 98, 95, 97, 94, 95, 100, 97, 95, 96, 97, 93, 92, 101, 99, 91, 92, 99, 93, 89, 91, 94, 95, 98, 97, 96, 95, 87, 90, 90, 96, 92, 96, 95, 91, 93, 100, 91, 90, 93, 94, 99, 100, 97, 103, 100, 94, 94, 97, 100, 96, 98, 99, 89, 93, 92, 93, 97, 101, 95, 91, 93, 92, 94, 92, 91, 91, 83, 82, 81, 80, 70, 73, 78, 79, 74, 78, 72, 76, 75, 73, 71, 72, 71, 63, 57, 57, 50, 50, 51, 53, 50, 50, 49, 47, 52, 49, 49, 45, 46, 44, 42, 41, 44, 42, 39, 38, 40, 34, 33, 32, 33, 33, 30, 29, 27, 27, 30, 32, 33, 32, 34, 38, 39, 34, 36, 37, 38, 40, 42, 45, 46, 45, 43, 44, 42, 41, 45, 49, 50, 52, 59, 61, 56, 57, 55, 49, 47, 44, 43, 43, 42, 38, 37, 36, 32, 31, 25, 26, 26, 24, 24, 24, 24, 22, 20, 22, 22, 24, 22, 22, 22, 18, 18, 18, 18, 18, 17, 18, 20, 19, 21, 21, 22, 21, 18, 17, 16, 15, 15, 15, 13, 14, 13, 13, 13, 12, 12, 10, 9, 9, 7, 6, 6, 5, 4, 4, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1], [93.0, 99.0, 92.0, 94.0, 90.0, 91.0, 91.0, 101.0, 97.0, 98.0, 101.0, 101.0, 96.0, 96.0, 98.0, 101.0, 96.0, 95.0, 97.0, 98.0, 98.0, 96.0, 95.0, 97.0, 91.0, 95.0, 98.0, 97.0, 99.0, 96.0, 97.0, 95.0, 95.0, 91.0, 86.0, 86.0, 87.0, 95.0, 97.0, 92.0, 96.0, 90.0, 98.0, 97.0, 96.0, 95.0, 91.0, 94.0, 100.0, 98.0, 98.0, 95.0, 94.0, 91.0, 100.0, 101.0, 98.0, 99.0, 97.0, 96.0, 101.0, 99.0, 92.0, 94.0, 95.0, 93.0, 91.0, 96.0, 97.0, 96.0, 101.0, 96.0, 97.0, 95.0, 94.0, 95.0, 95.0, 97.0, 95.0, 91.0, 90.0, 92.0, 92.0, 92.0, 98.0, 95.0, 97.0, 94.0, 95.0, 100.0, 97.0, 95.0, 96.0, 97.0, 93.0, 92.0, 101.0, 99.0, 91.0, 92.0, 99.0, 93.0, 89.0, 91.0, 94.0, 95.0, 98.0, 97.0, 96.0, 95.0, 87.0, 90.0, 90.0, 96.0, 92.0, 96.0, 95.0, 91.0, 93.0, 100.0, 91.0, 90.0, 93.0, 94.0, 99.0, 100.0, 97.0, 103.0, 100.0, 94.0, 94.0, 97.0, 100.0, 96.0, 98.0, 99.0, 89.0, 93.0, 92.0, 93.0, 97.0, 101.0, 95.0, 91.0, 93.0, 92.0, 94.0, 92.0, 91.0, 91.0, 83.0, 82.0, 81.0, 80.0, 70.0, 73.0, 78.0, 79.0, 74.0, 78.0, 72.0, 76.0, 75.0, 73.0, 71.0, 72.0, 71.0, 63.0, 57.0, 57.0, 50.0, 50.0, 51.0, 53.0, 50.0, 50.0, 49.0, 47.0, 52.0, 49.0, 49.0, 45.0, 46.0, 44.0, 42.0, 41.0, 44.0, 42.0, 39.0, 38.0, 40.0, 34.0, 33.0, 32.0, 33.0, 33.0, 30.0, 29.0, 27.0, 27.0, 30.0, 32.0, 33.0, 32.0, 34.0, 38.0, 39.0, 34.0, 36.0, 37.0, 38.0, 40.0, 42.0, 45.0, 46.0, 45.0, 43.0, 44.0, 42.0, 41.0, 45.0, 49.0, 50.0, 52.0, 59.0, 61.0, 56.0, 57.0, 55.0, 49.0, 47.0, 44.0, 43.0, 43.0, 42.0, 38.0, 37.0, 36.0, 32.0, 31.0, 25.0, 26.0, 26.0, 24.0, 24.0, 24.0, 24.0, 22.0, 20.0, 22.0, 22.0, 24.0, 22.0, 22.0, 22.0, 18.0, 18.0, 18.0, 18.0, 18.0, 17.0, 18.0, 20.0, 19.0, 21.0, 21.0, 22.0, 21.0, 18.0, 17.0, 16.0, 15.0, 15.0, 15.0, 13.0, 14.0, 13.0, 13.0, 13.0, 12.0, 12.0, 10.0, 9.0, 9.0, 7.0, 6.0, 6.0, 5.0, 4.0, 4.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+
+
