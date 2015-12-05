@@ -1,4 +1,5 @@
-import random, pylab
+import random
+import pylab
 
 # You are given this function
 def getMeanAndStd(X):
