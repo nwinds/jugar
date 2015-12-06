@@ -33,6 +33,11 @@ mutProb: probability of a mutation in a virus particle's offspring = 0.005
 
 """
 
+#
+# PROBLEM 1
+#
+
+
 def drawHist(lst, labelStr, legend, title='', xLabel='time step', yLabel='virus'):
     pylab.hist(lst, bins=50, label=labelStr)
     pylab.title(title)
@@ -40,7 +45,6 @@ def drawHist(lst, labelStr, legend, title='', xLabel='time step', yLabel='virus'
     pylab.ylabel(yLabel)
     pylab.legend(legend)
     pylab.show()
-    
 
 
 def genDelayedTreatmentPlot(tsDelayed, tsTreated, viruses, maxPop, drugs, numTrials):
@@ -51,21 +55,31 @@ def genDelayedTreatmentPlot(tsDelayed, tsTreated, viruses, maxPop, drugs, numTri
     drugs: list of drug used to treat the patient
     numTrials: number of simulation runs to execute (an integer)
     """
-    tsOverall = tsDelayed + tsTreated #timesteps of whole simulation
-    totalVirusPop = [] 
+    tsOverall = tsDelayed + tsTreated  # timesteps of whole simulation
+    totalVirusPop = []
     for nt in range(numTrials):
         patient = TreatedPatient(viruses, maxPop)
         for t in range(tsDelayed):
             patient.update()
-        patient.addPrescription(drugs[0]) #hard coded of first drug, default is guttagonol
+        # hard coded of first drug, default is guttagonol
+        patient.addPrescription(drugs[0])
         for t in range(tsDelayed, tsOverall):
             patient.update()
         totalVirusPop.append(patient.getTotalPop())
-    drawHist([totalVirusPop], 'total', ['total'], 'delaying treatment simulation', \
-    'final total virus population', 'number of trials')
-#
-# PROBLEM 1
-#
+    drawHist([totalVirusPop], 'total', ['total'], 'delaying treatment simulation',
+             'final total virus population', 'number of trials')
+
+
+def runSimulationDelayedTreatment(delays, tsTreated, maxBirthProb, clearProb,
+                                  resistances, mutProb, numViruses, maxPop, numTrials
+                                  ):
+    virus = ResistantVirus(maxBirthProb, clearProb, resistances, mutProb)
+    viruses = [virus for vnum in range(numViruses)]
+    for d in delays:
+        genDelayedTreatmentPlot(d, tsTreated, viruses, maxPop, [
+                                'guttagonol'], numTrials)
+
+
 def simulationDelayedTreatment(numTrials):
     """
     Runs simulations and make histograms for problem 1.
@@ -79,24 +93,27 @@ def simulationDelayedTreatment(numTrials):
 
     numTrials: number of simulation runs to execute (an integer)
     """
-    delays = [300, 150, 75, 0]
-    #delays = [150]
+    #delays = [300, 150, 75, 0]
+    delays = [150]
     tsTreated = 150
-    virus = ResistantVirus(maxBirthProb=0.1, clearProb=0.05, resistances={'guttagonol': False}, mutProb=0.005)
+    maxBirthProb = 0.1
+    clearProb = 0.05
+    resistances = {'guttagonol': False}
+    mutProb = 0.005
     numViruses = 100
-    viruses = [virus for vnum in range(numViruses)]
     maxPop = 1000
-    for d in delays:
-        #for i in range(4):
-        genDelayedTreatmentPlot(d, tsTreated, viruses, maxPop, ['guttagonol'], numTrials)
+    for i in range(5):
+        runSimulationDelayedTreatment(delays, tsTreated, maxBirthProb, clearProb,
+                                      resistances, mutProb + 0.004 * i, numViruses, maxPop, numTrials)
 
-#simulationDelayedTreatment(200)
-#for i in range(4):
-    #simulationDelayedTreatment(50*(i+1))
-simulationDelayedTreatment(100)
+# simulationDelayedTreatment(100)
+
+
 #
 # PROBLEM 2
 #
+
+
 def simulationTwoDrugsDelayedTreatment(numTrials):
     """
     Runs simulations and make histograms for problem 2.
