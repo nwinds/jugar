@@ -48,7 +48,7 @@ def drawHist(lst, labelStr, legend, title='', xLabel='time step', yLabel='virus'
     pylab.show()
 
 
-def genDelayedTreatmentPlot(tsDelayed, tsTreated, viruses, maxPop, drugs, numTrials):
+def genDelayedTreatmentList(tsDelayed, tsTreated, viruses, maxPop, drugs, numTrials):
     """
     tsDelayed: timesteps before patient treated with drug
     tsTreated: timesteps simulated after patient treated with drug
@@ -67,33 +67,38 @@ def genDelayedTreatmentPlot(tsDelayed, tsTreated, viruses, maxPop, drugs, numTri
         for t in range(tsDelayed, tsOverall):
             patient.update()
         totalVirusPop.append(patient.getTotalPop())
-    #drawHist([totalVirusPop], 'total', ['total'], 'delaying treatment simulation',
-             #'final total virus population', 'number of trials')
+    # drawHist([totalVirusPop], 'total', ['total'], 'delaying treatment simulation',
+        #'final total virus population', 'number of trials')
     return totalVirusPop
 
 
-def runSimulationDelayedTreatment(delays, tsTreated, maxBirthProb, clearProb,
-                                  resistances, mutProb, numViruses, maxPop, numTrials
-                                  ):
+def combSimulationDelayedTreatmentData(delays, tsTreated, maxBirthProb, clearProb,
+                                       resistances, mutProb, numViruses, maxPop, numTrials
+                                       ):
     virus = ResistantVirus(maxBirthProb, clearProb, resistances, mutProb)
     viruses = [virus for vnum in range(numViruses)]
     lstlst = []
     for d in delays:
-        lstlst.append(genDelayedTreatmentPlot(d, tsTreated, viruses, maxPop, [
-                                'guttagonol'], numTrials))
+        lstlst.append(genDelayedTreatmentList(d, tsTreated, viruses, maxPop, [
+            'guttagonol'], numTrials))
+    return lstlst
+
+
+def drawHistInOne(lstlst, delays):
     data = np.array([lst for lst in lstlst])
-    xaxes = [('x%d'%i) for i in range(len(delays))]
-    yaxes = [('y%d'%i) for i in range(len(delays))]
-    titles =  [('delay=%d'%ele) for ele in delays]    
-    f,a = plt.subplots(2,2)
+    xaxes = [('x%d' % i) for i in range(len(delays))]
+    yaxes = [('y%d' % i) for i in range(len(delays))]
+    titles = [('delay=%d' % ele) for ele in delays]
+    f, a = plt.subplots(2, 2)  # , sharex='col')#, sharey='row')
     a = a.ravel()
-    for idx,ax in enumerate(a):
-        ax.hist(data[idx])
+    for idx, ax in enumerate(a):
+        ax.hist(data[idx], bins=50)
         ax.set_title(titles[idx])
         ax.set_xlabel(xaxes[idx])
         ax.set_ylabel(yaxes[idx])
     plt.tight_layout()
     plt.show()
+
 
 def simulationDelayedTreatment(numTrials):
     """
@@ -118,10 +123,11 @@ def simulationDelayedTreatment(numTrials):
     numViruses = 100
     maxPop = 1000
     for i in range(1):
-        runSimulationDelayedTreatment(delays, tsTreated, maxBirthProb, clearProb,
-                                      resistances, mutProb + 0.004 * i, numViruses, maxPop, numTrials)
+        lstlst = combSimulationDelayedTreatmentData(delays, tsTreated, maxBirthProb, clearProb,
+                                                    resistances, mutProb + 0.004 * i, numViruses, maxPop, numTrials)
+        drawHistInOne(lstlst, delays)
 
-simulationDelayedTreatment(10)
+simulationDelayedTreatment(50)
 
 
 #
