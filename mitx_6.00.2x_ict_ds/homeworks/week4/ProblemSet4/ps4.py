@@ -4,7 +4,8 @@ import numpy
 import random
 import pylab
 from ps3b import *
-
+import matplotlib.pyplot as plt
+import numpy as np
 """
 ps4 requirements
 In Problem 5 of the last problem set you ran a simulation that consists of 150 
@@ -66,8 +67,9 @@ def genDelayedTreatmentPlot(tsDelayed, tsTreated, viruses, maxPop, drugs, numTri
         for t in range(tsDelayed, tsOverall):
             patient.update()
         totalVirusPop.append(patient.getTotalPop())
-    drawHist([totalVirusPop], 'total', ['total'], 'delaying treatment simulation',
-             'final total virus population', 'number of trials')
+    #drawHist([totalVirusPop], 'total', ['total'], 'delaying treatment simulation',
+             #'final total virus population', 'number of trials')
+    return totalVirusPop
 
 
 def runSimulationDelayedTreatment(delays, tsTreated, maxBirthProb, clearProb,
@@ -75,10 +77,23 @@ def runSimulationDelayedTreatment(delays, tsTreated, maxBirthProb, clearProb,
                                   ):
     virus = ResistantVirus(maxBirthProb, clearProb, resistances, mutProb)
     viruses = [virus for vnum in range(numViruses)]
+    lstlst = []
     for d in delays:
-        genDelayedTreatmentPlot(d, tsTreated, viruses, maxPop, [
-                                'guttagonol'], numTrials)
-
+        lstlst.append(genDelayedTreatmentPlot(d, tsTreated, viruses, maxPop, [
+                                'guttagonol'], numTrials))
+    data = np.array([lst for lst in lstlst])
+    xaxes = [('x%d'%i) for i in range(len(delays))]
+    yaxes = [('y%d'%i) for i in range(len(delays))]
+    titles =  [('delay=%d'%ele) for ele in delays]    
+    f,a = plt.subplots(2,2)
+    a = a.ravel()
+    for idx,ax in enumerate(a):
+        ax.hist(data[idx])
+        ax.set_title(titles[idx])
+        ax.set_xlabel(xaxes[idx])
+        ax.set_ylabel(yaxes[idx])
+    plt.tight_layout()
+    plt.show()
 
 def simulationDelayedTreatment(numTrials):
     """
@@ -93,8 +108,8 @@ def simulationDelayedTreatment(numTrials):
 
     numTrials: number of simulation runs to execute (an integer)
     """
-    #delays = [300, 150, 75, 0]
-    delays = [150]
+    delays = [300, 150, 75, 0]
+    #delays = [150]
     tsTreated = 150
     maxBirthProb = 0.1
     clearProb = 0.05
@@ -102,11 +117,11 @@ def simulationDelayedTreatment(numTrials):
     mutProb = 0.005
     numViruses = 100
     maxPop = 1000
-    for i in range(5):
+    for i in range(1):
         runSimulationDelayedTreatment(delays, tsTreated, maxBirthProb, clearProb,
                                       resistances, mutProb + 0.004 * i, numViruses, maxPop, numTrials)
 
-# simulationDelayedTreatment(100)
+simulationDelayedTreatment(10)
 
 
 #
