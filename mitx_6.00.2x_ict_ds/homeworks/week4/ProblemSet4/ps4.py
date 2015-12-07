@@ -48,7 +48,7 @@ def drawHist(lst, labelStr, legend, title='', xLabel='time step', yLabel='virus'
     pylab.show()
 
 
-def genDelayedTreatmentList(tsDelayed, tsTreated, viruses, maxPop, drugs, numTrials):
+def genDelayedTreatmentList(tsDelayed, tsTreated, viruses, maxPop, drugs, numTrials, multDrugs, tsFirstDrugAdd):
     """
     tsDelayed: timesteps before patient treated with drug
     tsTreated: timesteps simulated after patient treated with drug
@@ -56,31 +56,38 @@ def genDelayedTreatmentList(tsDelayed, tsTreated, viruses, maxPop, drugs, numTri
     drugs: list of drug used to treat the patient
     numTrials: number of simulation runs to execute (an integer)
     """
-    tsOverall = tsDelayed + tsTreated  # timesteps of whole simulation
+    # tsOverall = tsDelayed + tsTreated  # timesteps of whole simulation
     totalVirusPop = []
     for nt in range(numTrials):
+
         patient = TreatedPatient(viruses, maxPop)
+        if multDrugs:
+            # Run the simulation for 150 time steps before administering
+            # guttagonol to the patient, if more then one drug added
+
+            for t in range(tsFirstDrugAdd):
+                patient.update()
+            patient.addPrescription(drugs[0])
+
         for t in range(tsDelayed):
             patient.update()
         # hard coded of first drug, default is guttagonol
-        patient.addPrescription(drugs[0])
-        for t in range(tsDelayed, tsOverall):
+        patient.addPrescription(drugs[-1])
+        for t in range(tsTreated):
             patient.update()
         totalVirusPop.append(patient.getTotalPop())
-    # drawHist([totalVirusPop], 'total', ['total'], 'delaying treatment simulation',
-        #'final total virus population', 'number of trials')
     return totalVirusPop
 
 
 def combSimulationDelayedTreatmentData(delays, tsTreated, maxBirthProb, clearProb,
-                                       resistances, mutProb, numViruses, maxPop, numTrials
+                                       resistances, mutProb, numViruses, maxPop, numTrials, multDrugs=False, tsFirstDrugAdd=150
                                        ):
     virus = ResistantVirus(maxBirthProb, clearProb, resistances, mutProb)
     viruses = [virus for vnum in range(numViruses)]
     lstlst = []
     for d in delays:
-        lstlst.append(genDelayedTreatmentList(d, tsTreated, viruses, maxPop, [
-            'guttagonol'], numTrials))
+        lstlst.append(genDelayedTreatmentList(d, tsTreated, viruses, maxPop,
+                                              resistances.keys(), numTrials, multDrugs, tsFirstDrugAdd))
     return lstlst
 
 
@@ -127,7 +134,7 @@ def simulationDelayedTreatment(numTrials):
                                                     resistances, mutProb + 0.004 * i, numViruses, maxPop, numTrials)
         drawHistInOne(lstlst, delays)
 
-simulationDelayedTreatment(50)
+#simulationDelayedTreatment(50)
 
 
 #
@@ -148,4 +155,18 @@ def simulationTwoDrugsDelayedTreatment(numTrials):
 
     numTrials: number of simulation runs to execute (an integer)
     """
-    # TODO
+    delays = [300, 150, 75, 0]
+    tsTreated = 150
+    maxBirthProb = 0.1
+    clearProb = 0.05
+    resistances = {'guttagonol': False, 'grimpex': False}
+    mutProb = 0.005
+    numViruses = 100
+    maxPop = 1000
+    for i in range(1):
+        lstlst = combSimulationDelayedTreatmentData(delays, tsTreated, maxBirthProb, clearProb,
+                                                    resistances, mutProb + 0.004 * i, numViruses, maxPop, numTrials, True, 150)
+        drawHistInOne(lstlst, delays)
+
+
+#simulationTwoDrugsDelayedTreatment(50)
